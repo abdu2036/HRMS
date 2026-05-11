@@ -137,7 +137,7 @@
 
         <div class="info-row">
             <span class="label"><i class="fas fa-phone-alt"></i> رقم الهاتف:</span>
-            <span class="value" dir="ltr">{{ $employee->phone }}</span>
+            <span class="value" dir="ltr">0910000000</span>
         </div>
     </div>
 

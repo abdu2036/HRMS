@@ -13,36 +13,45 @@ use Laravel\Sanctum\HasApiTokens;
 
 class AuthController extends Controller
 {
-    public function login(Request $request)
-    {
-        // 1. التأكد من وصول البيانات
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+public function login(Request $request)
+{
+    // 1. التأكد من وصول البيانات
+    $credentials = $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
+    ]);
 
-        // 2. محاولة تسجيل الدخول
-        if (Auth::attempt($credentials)) {
-         /** @var \App\Models\User $user **/
-$user = Auth::user();
-$token = $user->createToken('main')->plainTextToken;
+    // 2. محاولة تسجيل الدخول
+    if (Auth::attempt($credentials)) {
+        /** @var \App\Models\User $user **/
+        $user = Auth::user();
+        
+        // جلب بيانات الموظف المرتبط بهذا المستخدم
+        $employee = $user->employee; 
 
-           return response()->json([
-    'user' => [
-        'name' => $user->name,
-        'email' => $user->email,
-        'vacation_balance' => $user->vacation_balance, // رصيد الإجازات
-        'tickets_balance' => $user->tickets_balance,   // رصيد التذاكر
-    ],
-    'token' => $token,
-    'message' => 'Success'
-], 200);
-        }
+        $token = $user->createToken('main')->plainTextToken;
 
-        // 3. في حال فشل الدخول
         return response()->json([
-            'message' => 'البيانات المدخلة غير صحيحة'
-        ], 401);
+            'user' => [
+                'id' => $user->id,
+                'name' => $employee ? $employee->full_name : $user->name,
+                'email' => $user->email,
+                'job_title' => $employee ? $employee->job_title : 'موظف',
+                // توليد رابط الصورة الكامل هنا
+                'profile_photo_url' => ($employee && $employee->profile_photo) 
+                    ? asset('storage/' . $employee->profile_photo) 
+                    : null,
+                'vacation_balance' => $employee ? $employee->total_leave_balance : 0,
+            ],
+            'token' => $token,
+            'message' => 'Success'
+        ], 200);
     }
+
+    // 3. في حال فشل الدخول
+    return response()->json([
+        'message' => 'البيانات المدخلة غير صحيحة'
+    ], 401);
+}
     
 }

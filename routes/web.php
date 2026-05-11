@@ -8,7 +8,7 @@ use App\Http\Controllers\{
      AttendanceDeviceController,
       LeaveController ,
         PenaltyController, 
-        salaryController,
+        SalaryController,
          LoanController,
          CustodyController,
          FinancialTransactionController,

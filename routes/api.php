@@ -75,3 +75,5 @@ Route::middleware('auth:sanctum')->get('/my-notifications', function (Request $r
 Route::any('/iclock/cdata', [AttendanceDeviceController::class, 'receivePushData']);
     return response()->json(['status' => 'success', 'data' => $notifications]);
 });
+// مسار تحديث الملف الشخصي
+Route::middleware('auth:sanctum')->post('/user/update-profile', [EmployeeDashboardController::class, 'updateProfileApi']);

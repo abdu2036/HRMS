@@ -149,11 +149,11 @@ public function earlyExitPermissions()
     return $this->hasMany(EarlyExitPermission::class);
 }
 
-// هذا الكود يقوم بتحويل النص إلى رقم قبل الحفظ في قاعدة البيانات
 public function setStatusAttribute($value)
 {
     // إذا كانت القيمة النصية "active" اجعلها 1، وإلا اجعلها 0
     $this->attributes['status'] = ($value === 'active' || $value == 1) ? 1 : 0;
 }
+
 
 }

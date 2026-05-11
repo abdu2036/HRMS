@@ -1,6 +1,6 @@
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
   <a href="{{ url('/') }}" class="brand-link">
-    <img src="https://scontent.fmji4-2.fna.fbcdn.net/v/t39.30808-6/535458773_1182094077288007_6356981769473909481_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=1d70fc&_nc_ohc=fW7Ggfn7XsgQ7kNvwGs1af4&_nc_oc=AdpDbJr-M9SdZaisgRJvj8U3Q-CsL09as15icWAXgRpXen1__h0pFn8pcQX_bfz5ERM&_nc_zt=23&_nc_ht=scontent.fmji4-2.fna&_nc_gid=vOkolxhGt0_J7YunoD6IFw&_nc_ss=7a3a8&oh=00_Af3c31h1xwnPA8awyh6Vi5gYEq1AU6wp1QXh-VA6o0ISrw&oe=69D959FF" 
+    <img src="{{ asset('assets/admin/dist/img/2027.png') }}"
          alt="Logo" 
          class="brand-image img-circle elevation-3" 
          style="opacity: .8; width: 33px; height: 33px; object-fit: cover;">
@@ -125,14 +125,14 @@
         <li class="nav-item">
             <a href="{{ route('departments.index') }}" class="nav-link {{ request()->is('admin/departments*') ? 'active' : '' }}">
                 <i class="far fa-circle nav-icon text-success"></i>
-                <p>إدارة الأقسام</p>
+                <p>الأقسام</p>
             </a>
         </li>
 
         <li class="nav-item">
             <a href="{{ route('job-titles.index') }}" class="nav-link {{ request()->is('admin/job-titles*') ? 'active' : '' }}">
                 <i class="far fa-circle nav-icon text-warning"></i>
-                <p>المسميات الوظيفية</p>
+                <p>الوحدات الوظيفية</p>
             </a>
         </li>
 

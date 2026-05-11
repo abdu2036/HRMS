@@ -107,6 +107,13 @@ public function getDashboardData()
     if (!$employee) {
         return response()->json(['status' => 'error', 'message' => 'الموظف غير موجود'], 404);
     }
+    // حساب مجموع دقائق التأخير للشهر الحالي
+    $totalLateMinutes = \App\Models\Attendance::where('employee_id', $employee->id)
+        ->whereMonth('date', now()->month)
+        ->whereYear('date', now()->year)
+        ->sum('late_minutes');
+
+    $totalLateHours = round($totalLateMinutes / 60, 1);
 
     // تجهيز رابط الصورة الكامل
     // إذا كانت الصورة موجودة ننشئ الرابط، وإذا لم تكن نضع NULL
@@ -123,24 +130,61 @@ public function getDashboardData()
     $penalties = Penalty::where('employee_id', $employee->id)->latest()->get();
     $salaries = \App\Models\PayrollReport::where('employee_id', $employee->id)->latest()->get();
 
-    return response()->json([
+   return response()->json([
         'status' => 'success',
-        // إرسال بيانات الموظف الأساسية مع رابط الصورة المباشر
         'user_data' => [
             'name' => $employee->full_name,
             'job_title' => $employee->job_title,
             'profile_photo_url' => $photoUrl,
+            // أضف هذا السطر إذا كنت قد جهزت حقل تغيير كلمة المرور
+            // 'must_change_password' => $user->must_change_password, 
         ],
         'rewards' => $rewards,
         'penalties' => $penalties,
         'salaries' => $salaries,
         'stats' => [
             'total_leave_balance' => $employee->total_leave_balance ?? 0,
-            'current_month_delay' => $employee->current_month_delay ?? 0, 
+            'current_month_delay' => $totalLateHours, // استخدام المتغير المحسوب بدقة
             'tickets_count'       => $allowance ? $allowance->current_balance : 0, 
             'total_rewards_sum'   => $rewards->sum('amount'),
             'total_penalties_sum' => $penalties->sum('amount'),
         ]
     ]);
 }
+
+public function updateProfileApi(Request $request)
+{
+    $user = auth()->user();
+    $employee = $user->employee;
+
+    if (!$employee) {
+        return response()->json(['status' => 'error', 'message' => 'الموظف غير موجود'], 404);
+    }
+
+    // 1. تحديث الصورة الشخصية
+    if ($request->hasFile('photo')) {
+        // حذف الصورة القديمة
+        if ($employee->profile_photo && Storage::disk('public')->exists($employee->profile_photo)) {
+            Storage::disk('public')->delete($employee->profile_photo);
+        }
+
+        // تخزين الجديدة
+        $path = $request->file('photo')->store('profile_photos', 'public');
+        $employee->update(['profile_photo' => $path]);
+    }
+
+    // 2. تحديث كلمة المرور
+    if ($request->filled('password')) {
+        $user->update([
+            'password' => Hash::make($request->password)
+        ]);
+    }
+
+    return response()->json([
+        'status' => 'success',
+        'message' => 'تم تحديث البيانات بنجاح',
+        'profile_photo_url' => asset('storage/' . $employee->profile_photo)
+    ]);
+}
+
 }

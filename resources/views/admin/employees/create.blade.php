@@ -276,7 +276,7 @@
 
             <div class="row">
                 <div class="col-md-4 form-group">
-                    <label class="font-weight-bold">القسم <span class="text-danger">*</span></label>
+                    <label class="font-weight-bold">الادارة <span class="text-danger">*</span></label>
                     <div class="input-group">
                         <div class="input-group-prepend">
                             <span class="input-group-text"><i class="fas fa-sitemap"></i></span>
@@ -297,7 +297,7 @@
                             <span class="input-group-text"><i class="fas fa-user-tag"></i></span>
                         </div>
                         <select name="job_title_id" class="form-control select2" required style="width: 80%;">
-                            <option value="" selected disabled>اختر الوظيفة</option>
+                            <option value="" selected disabled> القسم</option>
                             @foreach($jobTitles as $title)
                                 <option value="{{ $title->id }}" {{ old('job_title_id') == $title->id ? 'selected' : '' }}>{{ $title->name }}</option>
                             @endforeach

@@ -245,7 +245,7 @@
 
             <div class="row mt-2">
                 <div class="col-md-4 form-group">
-                    <label>القسم <span class="text-danger">*</span></label>
+                    <label>الادارة <span class="text-danger">*</span></label>
                     <select name="department_id" class="form-control select2" required style="width: 100%;">
                         @foreach($departments as $dept)
                             <option value="{{ $dept->id }}" {{ $employee->department_id == $dept->id ? 'selected' : '' }}>{{ $dept->name }}</option>
@@ -253,7 +253,7 @@
                     </select>
                 </div>
                 <div class="col-md-4 form-group">
-                    <label>المسمى الوظيفي <span class="text-danger">*</span></label>
+                    <label>القسم<span class="text-danger">*</span></label>
                     <select name="job_title_id" class="form-control select2" required style="width: 100%;">
                         @foreach($jobTitles as $title)
                             <option value="{{ $title->id }}" {{ $employee->job_title_id == $title->id ? 'selected' : '' }}>{{ $title->name }}</option>
