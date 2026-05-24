@@ -67,18 +67,18 @@
             </div>
         </div>
 <div class="col-md-3 col-sm-6 col-12">
-    <div class="info-box shadow-sm border bg-info">
+    <!--<div class="info-box shadow-sm border bg-info">
         <span class="info-box-icon text-white"><i class="fas fa-ticket-alt"></i></span>
         <div class="info-box-content">
             <span class="info-box-text text-white">رصيد تذاكر الألعاب</span>
             <span class="info-box-number text-white">
     {{ $currentTicketAllowance->current_balance ?? 0 }} تذكرة
 </span>
-        </div>
+        </div> -->
     </div>
 </div>
         
-    </div>
+    </div> 
 
     <div class="row">
         {{-- الجانب الأيمن: الملف الشخصي والطلبات الجديدة (مجمعة) --}}
@@ -147,7 +147,7 @@
                         </div>
                     </div>
                     {{-- 4. طلب تذاكر ألعاب --}}
-<div class="card card-light collapsed-card shadow-none border mb-2">
+<!--<div class="card card-light collapsed-card shadow-none border mb-2">
     <div class="card-header">
         <h3 class="card-title text-info"><i class="fas fa-ticket-alt mr-2"></i> طلب تذاكر ألعاب</h3>
         <div class="card-tools">
@@ -170,7 +170,7 @@
     <button type="submit" class="btn btn-info btn-block">إرسال الطلب</button>
 </form>
     </div>
-</div>
+</div> -->
 
                     {{-- 3. تحديث بيانات الدخول --}}
                     <div class="card card-light collapsed-card shadow-none border mb-0">
@@ -203,7 +203,7 @@
                         <li class="nav-item"><a class="nav-link" href="#rewards" data-toggle="tab">المكافآت</a></li>
                         <li class="nav-item"><a class="nav-link" href="#penalties" data-toggle="tab">العقوبات</a></li>
                         <li class="nav-item">
-    <a class="nav-link" href="#tickets_tab" data-toggle="tab">تذاكر الألعاب</a>
+    <!--<a class="nav-link" href="#tickets_tab" data-toggle="tab">تذاكر الألعاب</a> -->
 </li>
                     </ul>
                 </div>

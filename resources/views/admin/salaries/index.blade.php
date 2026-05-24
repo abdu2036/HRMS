@@ -41,7 +41,7 @@
                                     <i class="fas fa-edit"></i> تعديل
                                 </button>
 
-                                <form action="{{ route('salaries.destroy', $salary->id) }}" method="POST" style="display:inline-block;">
+                                <form action="{{ route('admin.salaries.destroy', $salary->id) }}" method="POST" style="display:inline-block;">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('هل أنت متأكد من الحذف؟')">
@@ -58,7 +58,7 @@
                                         <h5 class="modal-title">تعديل راتب: {{ $salary->employee->name }}</h5>
                                         <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
                                     </div>
-                                    <form action="{{ route('salaries.update', $salary->id) }}" method="POST">
+                                    <form action="{{ route('admin.salaries.update', $salary->id) }}" method="POST">
                                         @csrf
                                         @method('PUT')
                                         <div class="modal-body">
@@ -98,7 +98,7 @@
                 <h5 class="modal-title">تحديد راتب لموظف جديد</h5>
                 <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
-            <form action="{{ route('salaries.store') }}" method="POST">
+            <form action="{{ route('admin.salaries.store') }}" method="POST">
                 @csrf
                 <div class="modal-body">
                     <div class="form-group">

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+c<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="utf-8">
@@ -11,142 +11,137 @@
     
     <link rel="stylesheet" href="{{ asset('vendor/adminlte/dist/css/adminlte.min.css') }}">
     
-    <style>
-        body { 
-            font-family: 'Cairo', sans-serif; 
-            background-color: #f0f2f5; 
-            height: 100vh;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+<style>
+    body { 
+        font-family: 'Cairo', sans-serif; 
+        background-color: #f0f2f5; 
+        min-height: 100vh;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px; /* مسافة بسيطة حول الكارت في الموبايل */
+    }
 
-        /* الكارت الرئيسي (Container) */
+    /* الكارت الرئيسي */
+    .login-card-web {
+        background: white;
+        width: 100%;
+        max-width: 850px;
+        min-height: 500px;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        display: flex;
+        flex-direction: row; /* للكمبيوتر */
+        overflow: hidden;
+    }
+
+    /* الجانب البصري (الأزرق) */
+    .login-visual {
+        flex: 1.2;
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .visual-img {
+        width: 140px !important;
+        height: 140px !important;
+        object-fit: contain;
+        border-radius: 50%;
+        border: 4px solid rgba(255, 255, 255, 0.2);
+        background-color: white;
+        padding: 10px;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .login-visual h2 { font-weight: 700; font-size: 1.6rem; margin-bottom: 10px; }
+    .login-visual p { font-size: 0.95rem; opacity: 0.9; line-height: 1.6; }
+
+    /* جانب الفورم */
+    .login-form-area {
+        flex: 1;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .form-area-header h3 { font-weight: 700; font-size: 1.4rem; text-align: center; }
+    .form-area-header p { text-align: center; margin-bottom: 25px; }
+
+    /* الحقول */
+    .input-group-modern { position: relative; margin-bottom: 15px; }
+    .input-group-modern .form-control {
+        border-radius: 25px;
+        padding: 12px 15px 12px 45px;
+        border: 1px solid #e0e0e0;
+        width: 100%;
+        font-size: 0.95rem;
+    }
+
+    .input-group-modern .input-icon {
+        position: absolute;
+        left: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #adb5bd;
+    }
+
+    .btn-login-modern {
+        background-color: #4e73df;
+        border: none;
+        color: white;
+        font-weight: 700;
+        padding: 12px;
+        border-radius: 25px;
+        width: 100%;
+        margin-top: 15px;
+        transition: 0.3s;
+    }
+
+    /* --- تعديلات الهاتف الذكي --- */
+    @media (max-width: 768px) {
+        body { padding: 0; align-items: flex-start; } /* يبدأ من الأعلى في الموبايل */
+        
         .login-card-web {
-            background: white;
-            width: 850px;
-            height: 500px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            display: flex;
-            overflow: hidden; /* لضمان عدم خروج المحتوى عن الحواف المنحنية */
+            flex-direction: column; /* العناصر تحت بعض */
+            border-radius: 0; /* ملء الشاشة في الموبايل */
+            box-shadow: none;
+            min-height: 100vh;
         }
 
-        /* الجانب البصري (الأيسر) */
         .login-visual {
-            flex: 1.2;
-            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-            text-align: center;
+            padding: 40px 20px;
+            flex: none; /* لا يتمدد ليأخذ مساحة أكبر من اللازم */
         }
-.visual-img {
-    width: 180px !important; /* حجم متناسق للشعار */
-    height: 180px !important;
-    object-fit: cover; /* لضمان عدم تمدد الصورة */
-    border-radius: 50%; /* جعل الصورة دائرية تماماً */
-    border: 5px solid rgba(255, 255, 255, 0.2); /* إطار شفاف عصري */
-    background-color: white; /* خلفية بيضاء خلف الشعار ليبرز */
-    padding: 5px;
-    margin-bottom: 25px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); /* ظل ناعم لإعطاء عمق */
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-}
 
-/* تنسيق النصوص بجانب الشعار */
-.login-visual h2 {
-    font-weight: 800;
-    margin-top: 10px;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-}
+        .visual-img {
+            width: 100px !important;
+            height: 100px !important;
+        }
 
-.login-visual p {
-    font-size: 1rem;
-    opacity: 0.85;
-    max-width: 300px;
-    margin: 0 auto;
-}
+        .login-visual h2 { font-size: 1.3rem; }
 
-        /* الجانب الخاص بالبيانات (الأيمن) */
         .login-form-area {
+            padding: 30px 25px;
             flex: 1;
-            padding: 50px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
         }
 
-        .form-area-header { text-align: center; margin-bottom: 30px; }
-        .form-area-header h3 { font-weight: 700; color: #1a1a1a; margin-bottom: 5px; }
-        .form-area-header p { text-muted; }
-
-        /* تنسيق الحقول */
-        .input-group-modern {
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        .input-group-modern .form-control {
-            border-radius: 30px;
-            padding: 12px 20px 12px 45px; /* مساحة للأيقونة جهة اليسار */
-            border: 1px solid #ddd;
-            height: auto;
-            font-size: 1rem;
-        }
-
-        .input-group-modern .form-control:focus {
-            border-color: #4e73df;
-            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.1);
-        }
-
-        .input-group-modern .input-icon {
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #ccc;
-            font-size: 1.1rem;
-            z-index: 10;
-        }
-
-        /* زر الدخول */
-        .btn-login-modern {
-            background-color: #4e73df;
-            border: none;
-            color: white;
-            font-weight: 700;
-            padding: 12px;
-            border-radius: 30px;
-            font-size: 1.1rem;
-            width: 100%;
-            margin-top: 10px;
-            transition: background-color 0.3s;
-        }
-
-        .btn-login-modern:hover { background-color: #2e59d9; }
-
-        /* الروابط الإضافية */
-        .extra-links { text-align: center; margin-top: 20px; font-size: 0.95rem; }
-        .extra-links a { color: #4e73df; text-decoration: none; font-weight: 600; }
-        .extra-links a:hover { text-decoration: underline; }
-
-        /* تذييل الصفحة */
         .page-footer {
-            position: fixed;
-            bottom: 20px;
-            width: 100%;
-            text-align: center;
-            font-size: 0.9rem;
-            color: #777;
+            position: relative;
+            bottom: 0;
+            padding: 20px 10px;
+            background: #fff;
         }
-    </style>
+    }
+</style>
 </head>
 <body>
 
@@ -155,7 +150,7 @@
             <img src="{{ asset('assets/admin/dist/img/2027.png') }}" alt="شعار الشركة" class="visual-img">
             
             <h2>أهلاً بعودتك!</h2>
-            <p>نظام HRMS الموحد المطور خصيصاً لموظفي وإدارة شركة "دار المرح
+            <p>نظام HRMSالموحد المطور خصيصاً لموظفي وإدارة شركة "الحدائق 
             "</p>
         </div>
         

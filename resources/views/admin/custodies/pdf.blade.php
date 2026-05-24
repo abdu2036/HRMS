@@ -46,7 +46,7 @@
 </head>
 <body>
     <div class="header">
-        <img src="{{ public_path('images/logo.png') }}" style="width: 80px; height: auto; margin-bottom: 10px;">
+        <img src="https://alhadayiq.ly/assets/admin/dist/img/2027.png" alt="شعار الشركة" style="width: 80px; height: auto; margin-bottom: 10px;">
         <h2>{{ $labels['title'] }}</h2>
         <p>#{{ $data['id'] }} | {{ $data['date'] }}</p>
     </div>

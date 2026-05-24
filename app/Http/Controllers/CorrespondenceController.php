@@ -110,4 +110,16 @@ class CorrespondenceController extends Controller
 
         return view('admin.correspondence.print', compact('correspondence'));
     }
+
+    // إضافة هذا الكونستركتور لمنع وصول الموظفين إلى المراسلات
+    public function __construct()
+{
+    $this->middleware(function ($request, $next) {
+        // إذا كان المستخدم الحالي لديه دور موظف، اطرده فوراً خارج المراسلات
+        if (auth()->user()->hasRole('employee')) {
+            abort(403);
+        }
+        return $next($request);
+    });
+}
 }

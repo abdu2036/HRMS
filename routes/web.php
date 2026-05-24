@@ -47,8 +47,8 @@ Route::middleware(['auth', 'role:super-admin'])->group(function () {
     Route::resource('users', UserController::class);
 });
 
-// 5. مجموعة مسارات الإدارة (admin prefix)
-Route::middleware(['auth'])->prefix('admin')->group(function () {
+// 5. مجموعة مسارات الإدارة (admin prefix) - تم تعديلها لتشمل كل ما يخص الموارد البشرية في مكان واحد للتعديل عليها هنا 
+Route::middleware(['auth', 'role:super-admin|Accountant' ])->prefix('admin')->group(function () {
     Route::resource('departments', DepartmentController::class);
     Route::resource('job-titles', JobTitleController::class);
     Route::resource('shifts', ShiftController::class);
@@ -63,27 +63,21 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
 
 // 6. مجموعة مسارات الموظف الموحدة (is_employee)
 // وضعنا هنا كل ما يحتاجه الموظف في مكان واحد
-Route::middleware(['auth', 'is_employee'])->group(function () {
-    
+Route::middleware(['auth', 'is_employee'])->group(function () { 
     // لوحة التحكم الشخصية للموظف
     Route::get('/employee/dashboard', [EmployeeDashboardController::class, 'index'])->name('employee.dashboard');
-
     // مسارات البصمة (الحضور والانصراف)
     Route::get('/my-attendance', [AttendanceController::class, 'index'])->name('attendances.index');
     Route::post('/attendances/store', [AttendanceController::class, 'store'])->name('attendances.store');
     Route::put('/attendances/update/{id}', [AttendanceController::class, 'update'])->name('attendances.update');
-
     // تحديث بيانات الموظف من صفحته الشخصية
     Route::post('/employee/profile/update', [EmployeeDashboardController::class, 'updateProfile'])->name('employee.profile.update');
-   
-    
     // رابط صفحة ملخص الحضور الشهري
-
 });
 
 
 // بدلاً من ['middleware' => 'admin']
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'role:super-admin|Accountant'])->group(function () {
     Route::get('/admin/attendances/monthly-summary', [AttendanceController::class, 'monthlySummary'])
          ->name('admin.attendances.monthly_summary');
 });
@@ -96,13 +90,11 @@ Route::get('/device/test', [AttendanceDeviceController::class, 'testConnection']
 // للموظف
 // داخل مجموعة الموظف (المجموعة رقم 6 في كودك)
 Route::middleware(['auth', 'is_employee'])->group(function () {
-    // ... مساراتك السابقة ...
     Route::post('/leaves/store', [LeaveController::class, 'store'])->name('leaves.store'); // تقديم طلب
 });
 
 // داخل مجموعة الإدارة (المجموعة رقم 5 في كودك)
 Route::middleware(['auth'])->prefix('admin')->group(function () {
-    // ... مساراتك السابقة ...
     Route::get('/leaves', [LeaveController::class, 'index'])->name('admin.leaves.index'); // عرض الطلبات
     Route::post('/leaves/update-status/{id}', [LeaveController::class, 'updateStatus'])->name('leaves.updateStatus'); // قبول/رفض
     Route::get('/leaves/events', [LeaveController::class, 'getEvents'])->name('admin.leaves.events');
@@ -116,51 +108,50 @@ Route::get('/admin/leaves/calendar', function() {
 Route::get('/admin/employees/{id}/id-card', [EmployeeController::class, 'idCard'])->name('admin.employees.id_card');
 
 //مسار المكافآت
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    
+Route::middleware(['auth', 'role:super-admin|Accountant'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/rewards', [RewardController::class, 'index'])->name('rewards.index');
     Route::get('/rewards/create', [RewardController::class, 'create'])->name('rewards.create');
     Route::post('/rewards/store', [RewardController::class, 'store'])->name('rewards.store');
-    
-    // تأكد من وجود هذين السطرين
     Route::get('/rewards/{reward}/edit', [RewardController::class, 'edit'])->name('rewards.edit');
     Route::delete('/rewards/{reward}', [RewardController::class, 'destroy'])->name('rewards.destroy');
-    Route::put('/rewards/{reward}/update', [RewardController::class, 'update'])->name('rewards.update');
-
-        
-    
-    
+    Route::put('/rewards/{reward}/update', [RewardController::class, 'update'])->name('rewards.update'); 
 });
 //العقوبات
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {       
-    Route::get('/penalties', [PenaltyController::class, 'index'])->name('penalties.index');
-    Route::get('/penalties/create', [PenaltyController::class, 'create'])->name('penalties.create');
-    Route::post('/penalties/store', [PenaltyController::class, 'store'])->name('penalties.store');
+// 1. مجموعة العقوبات المحمية (مقتصرة على مدير النظام والمحاسب)
+Route::middleware(['auth', 'role:super-admin|Accountant'])->prefix('admin')->name('admin.')->group(function () {       
     
-    // تأكد من وجود هذين السطرين
-    Route::get('/penalties/{penalty}/edit', [PenaltyController::class, 'edit'])->name('penalties.edit');
-    Route::delete('/penalties/{penalty}', [PenaltyController::class, 'destroy'])->name('penalties.destroy');
-    Route::resource('penalties', PenaltyController::class)->names('admin.penalties');
+    // سطر الـ resource هذا يغنيك عن كتابة (index, create, store, edit, destroy) يدوياً ويقوم بإنشائها تلقائياً
     Route::resource('penalties', PenaltyController::class);
-    Route::get('/notifications/{id}/read', [PenaltyController::class, 'readNotification'])->name('notifications.read');
+
 });
+
+// 2. مسار قراءة الإشعار (يمكن لأي موظف قراءته، لكن فقط المدير والمحاسب يمكنهم إنشاء العقوبات والإشعارات)
+Route::middleware(['auth'])->group(function () {
+    
+    Route::get('admin/notifications/{id}/read', [PenaltyController::class, 'readNotification'])
+         ->name('admin.notifications.read');
+});
+
+
 //الاشعارات
 Route::get('/notifications/all', [PenaltyController::class, 'allNotifications'])->name('admin.notifications.all');
 
 //روابط الرواتب
-Route::prefix('admin')->group(function () {
+// مجموعة مسارات الرواتب - محمية ومقتصرة على مدير النظام والمحاسب فقط
+Route::middleware(['auth', 'role:super-admin|Accountant'])->prefix('admin')->name('admin.')->group(function () {
+    
+    // سطر الـ resource يغطي (index, create, store, show, edit, update, destroy)
     Route::resource('salaries', SalaryController::class);
-    Route::post('/admin/salaries/approve/{id}', [SalaryController::class, 'approvePayment'])->name('admin.salaries.approve');
+    
+    // مسار اعتماد وصرف الراتب (تم حذف /admin/ المكررة لتناسق الرابط)
+    Route::post('salaries/approve/{id}', [SalaryController::class, 'approvePayment'])->name('salaries.approve');
+    
 });
-
 // روابط السلف
 // إضافة name('admin.') تجعل كل المسارات بالداخل تبدأ بـ admin.
 Route::prefix('admin')->name('admin.')->group(function () {
-    
     // هذا السطر وحده يكفي (ينشئ: index, create, store, show, edit, update, destroy)
     Route::resource('loans', LoanController::class);
-    
-
     // المسارات الإضافية الخاصة بك (تأكد من مطابقتها للكنترولر)
     Route::post('/loans/{loan}/approve', [LoanController::class, 'approve'])->name('loans.approve');
     Route::post('/loans/{loan}/reject', [LoanController::class, 'reject'])->name('loans.reject');
@@ -168,71 +159,62 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 // رابط الموافقة على السلفة من قبل المدير
 Route::post('admin/loans/{id}/approve', [LoanController::class, 'approve'])->name('loans.approve');
-
 // مسارات إدارة السلف للمدير
 Route::post('/admin/loans/{id}/approve', [LoanController::class, 'approve'])->name('admin.loans.approve');
 Route::post('/admin/loans/{id}/reject', [LoanController::class, 'reject'])->name('admin.loans.reject');
 
-Route::middleware(['auth'])->group(function () {
-    
-    // مجموعة مسارات العهد ببادئة مشتركة
+
+//العهد
+Route::middleware(['auth', 'role:super-admin|Accountant'])->group(function () {
     Route::prefix('custodies')->name('custodies.')->group(function () {
         Route::get('/', [CustodyController::class, 'index'])->name('index');
         Route::get('/create', [CustodyController::class, 'create'])->name('create');
         Route::post('/', [CustodyController::class, 'store'])->name('store');
         Route::put('/{id}/update-status', [CustodyController::class, 'updateStatus'])->name('updateStatus');
+        Route::get('/{id}/print', [CustodyController::class, 'printReceipt'])->name('print');
     });
-
 });
 
-//طباعة
-Route::get('custodies/{id}/print', [CustodyController::class, 'printReceipt'])->name('custodies.print');
+  
 
-Route::prefix('admin')->name('admin.')->group(function () {
-    // مسارات الحاوية المالية
+
+// مسارات الحاوية المالية
+Route::middleware(['auth', 'role:super-admin|Accountant'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('financial-transactions', [FinancialTransactionController::class, 'index'])->name('financial.index');
     Route::delete('financial-transactions/{id}', [FinancialTransactionController::class, 'destroy'])->name('financial.destroy');
+    
 });
 
-
 // روابط صرف المرتبات النهائية
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    
+Route::middleware(['auth', 'role:super-admin|Accountant'])->prefix('admin')->name('admin.')->group(function () {
     // رابط عرض جدول الرواتب -> يصبح اسمه admin.payroll.index
     Route::get('/payroll', [PayrollController::class, 'index'])->name('payroll.index');
-    
     // رابط معالجة عملية الصرف -> يصبح اسمه admin.payroll.process
     Route::post('/payroll/process', [PayrollController::class, 'process'])->name('payroll.process');
-    
     // التعديل هنا: حذفنا admin. من الاسم لأنها مضافة تلقائياً من الـ Group
     Route::get('/payroll/receipt/{id}', [PayrollController::class, 'showReceipt'])->name('payroll.receipt');
    Route::get('/payroll-reports/print', [PayrollReportController::class, 'print'])->name('payroll.reports.print');
-    
 });
 
 // مسارات كشف المرتبات المستقل (التقارير)
-Route::prefix('admin/payroll-reports')->group(function () {
-    
+Route::middleware(['auth', 'role:super-admin|Accountant'])->prefix('admin/payroll-reports')->group(function () {
     // 1. عرض التقرير النهائي (كشف مرتبات الموظفين)
     Route::get('/', [PayrollReportController::class, 'index'])->name('payroll.reports.index');
-    
     // 2. استقبال عملية الترحيل والحفظ من شاشة الصرف
     Route::post('/store', [PayrollReportController::class, 'store'])->name('payroll.reports.store');
-    
     // 3. مسار اختياري لعرض موظف واحد فقط (إيصال) إذا احتجت له مستقبلاً
     Route::get('/{id}', [PayrollReportController::class, 'show'])->name('payroll.reports.show');
     Route::get('/receipt/{id}', [PayrollReportController::class, 'showReceipt'])->name('payroll.reports.showReceipt');
 });
 
+// رابط تغيير حالة العهدة (تسليم/استلام)
 Route::post('/admin/custodies/toggle-status/{id}', [App\Http\Controllers\CustodyController::class, 'toggleStatus'])->name('admin.custodies.toggleStatus');
-
 // رابط تصدير الحضور إلى Excel
 Route::get('attendances/export', [AttendanceController::class, 'exportExcel'])->name('admin.attendances.export');
 
 
 
 //المسارات المراسلات الإدارية
-// تأكد أن المسارات داخل مجموعة الحماية لضمان تسجيل الدخول
 Route::middleware(['auth'])->prefix('admin')->group(function () {
 
     // مسارات المراسلات الإدارية
@@ -254,21 +236,25 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
         Route::get('/{id}/print', [CorrespondenceController::class, 'print'])->name('print');
 
     });
+
 //رابط التذاكر
 Route::post('/ticket-transactions', [TicketTransactionController::class, 'store'])->name('ticket.transactions.store');
 // مسار إرسال طلب التذاكر
 Route::post('/employee/tickets/request', [TicketTransactionController::class, 'storeRequest'])->name('tickets.request');
 
 });
+
 // رابط الموافقة على طلب امغادرة من قبل المدير
 Route::middleware(['auth'])->group(function () {
     Route::post('/admin/early-exits/store', [AttendanceController::class, 'storeEarlyExit'])->name('admin.early_exits.store');
 });
 
-Route::middleware(['auth'])->group(function () {
+// رابط ترحيل الخصومات الشهرية من الحضور إلى الرواتب
+Route::middleware(['auth', 'role:super-admin|Accountant'])->group(function () {
   Route::post('/admin/attendances/transfer-deductions', [AttendanceController::class, 'transferMonthlyDeductions'])
     ->name('admin.attendances.transfer_deductions');
 });
+
 
 //رابط جهاز البصمة
 Route::get('/attendances/sync', [AttendanceDeviceController::class, 'syncAttendance'])->name('admin.attendances.sync');

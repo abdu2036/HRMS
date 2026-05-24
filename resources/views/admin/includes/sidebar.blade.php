@@ -5,7 +5,7 @@
          class="brand-image img-circle elevation-3" 
          style="opacity: .8; width: 33px; height: 33px; object-fit: cover;">
     
-    <span class="brand-text font-weight-light">نظام إدارة  دار المرح</span>
+    <span class="brand-text font-weight-light">نظام إدارة الموظفين</span>
 </a>
 
     <div class="sidebar">
@@ -112,7 +112,7 @@
 
 
             {{-- قسم إدارة الموارد البشرية يظهر فقط للأدمن ومدير الموارد البشرية --}}
-               @if(auth()->user()->hasAnyRole(['super-admin', 'admin', 'hr-manager']))
+               @if(auth()->user()->hasAnyRole(['super-admin', 'admin', 'hr-manager', 'Accountant' ]))
 <li class="nav-item has-treeview {{ request()->is('admin/departments*') || request()->is('admin/job-titles*') || request()->is('admin/employees*') || request()->is('admin/attendances*') ? 'menu-open' : '' }}">
     <a href="#" class="nav-link {{ request()->is('admin/departments*') || request()->is('admin/job-titles*') || request()->is('admin/employees*') || request()->is('admin/attendances*') ? 'active' : '' }}">
         <i class="nav-icon fas fa-users-cog"></i>
@@ -122,39 +122,46 @@
         </p>
     </a>
     <ul class="nav nav-treeview">
+        @if(auth()->user()->hasAnyRole(['super-admin', 'admin', 'hr-manager',  ]))
         <li class="nav-item">
             <a href="{{ route('departments.index') }}" class="nav-link {{ request()->is('admin/departments*') ? 'active' : '' }}">
                 <i class="far fa-circle nav-icon text-success"></i>
                 <p>الأقسام</p>
             </a>
         </li>
-
+        @endif
+@if(auth()->user()->hasAnyRole(['super-admin', 'admin', 'hr-manager',  ]))
         <li class="nav-item">
             <a href="{{ route('job-titles.index') }}" class="nav-link {{ request()->is('admin/job-titles*') ? 'active' : '' }}">
                 <i class="far fa-circle nav-icon text-warning"></i>
                 <p>الوحدات الوظيفية</p>
             </a>
         </li>
-
+        @endif
+@if(auth()->user()->hasAnyRole(['super-admin', 'admin', 'hr-manager', ]))
         <li class="nav-item">
             <a href="{{ route('shifts.index') }}" class="nav-link {{ request()->is('admin/shifts*') ? 'active' : '' }}">
                 <i class="far fa-circle nav-icon text-blue"></i>
                 <p>الشفتات</p>
             </a>
         </li>
-
+        @endif
+@if(auth()->user()->hasAnyRole(['super-admin', 'admin', 'hr-manager',  ]))
         <li class="nav-item">
             <a href="{{ route('employees.index') }}" class="nav-link {{ request()->is('admin/employees*') ? 'active' : '' }}">
                 <i class="far fa-circle nav-icon text-info"></i>
                 <p>بيانات الموظفين</p>
             </a>
         </li>
+        @endif
+        @if(auth()->user()->hasAnyRole(['super-admin', 'admin', 'hr-manager', 'Accountant' ]))
 <li class="nav-item">
     <a href="{{ route('admin.attendances.index') }}" class="nav-link {{ request()->is('admin/attendances*') ? 'active' : '' }}">
         <i class="far fa-circle nav-icon text-danger"></i>
         <p>الحضور والانصراف</p>
     </a>
 </li>
+@endif
 {{-- تابع لـ إدارة الموارد البشرية - يظهر للأدمن فقط --}}
 <li class="nav-item">
     <a href="{{ route('admin.leaves.index') }}" class="nav-link {{ request()->is('admin/leaves') ? 'active' : '' }}">
@@ -192,7 +199,7 @@
 @endif {{-- إغلاق الشرط هنا لمدير الموارد البشرية --}}
 
 {{-- قسم الحسابات والتقارير يظهر فقط للأدمن والمدير المالي --}}
-@if(auth()->user()->hasAnyRole(['super-admin', 'accountant']))
+@if(auth()->user()->hasAnyRole(['super-admin', 'Accountant']))
 <li class="nav-item has-treeview {{ request()->is('admin/finance*') ? 'menu-open' : '' }}">
     <a href="#" class="nav-link {{ request()->is('admin/finance*') ? 'active' : '' }}">
         <i class="nav-icon fas fa-calculator"></i> {{-- أيقونة حاسبة أنسب للحسابات --}}
@@ -205,7 +212,7 @@
         
         {{-- قسم الرواتب --}}
         <li class="nav-item">
-            <a href="{{ route('salaries.index') }}"
+            <a href="{{ route('admin.salaries.index') }}"
                class="nav-link {{ request()->is('admin/salaries*') ? 'active' : '' }}">
                 <i class="fas fa-money-check-alt nav-icon"></i>
                 <p> الرواتب الأساسية </p>
@@ -252,7 +259,7 @@
         <i class="nav-icon fas fa-file-invoice-dollar text-primary"></i>
         <p>
             كشف مرتبات الموظفين
-            
+            <span class="right badge badge-primary">📊</span>
         </p>
     </a>
 </li>
@@ -275,6 +282,7 @@
                           ->orWhere('receiver_department_id', auth()->user()->department_id);
                     })->count();
 @endphp
+@if(auth()->user()->hasAnyRole(['super-admin', 'admin', 'hr-manager']))
       <li class="nav-item">
     <a href="{{ route('correspondence.index') }}" class="nav-link {{ request()->is('admin/correspondence*') ? 'active' : '' }}">
         <i class="nav-icon fas fa-envelope-open-text"></i>
@@ -284,6 +292,7 @@
         </p>
     </a>
 </li>
+@endif
                 <hr style="border-top: 1px solid #4f5962;">
 
                 <li class="nav-item">

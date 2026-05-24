@@ -113,7 +113,7 @@
 
 <div class="id-card">
     <div class="card-top">
-        <h2>شركة دار المرح</h2>
+        <h2> قرية حدائق غنيمة </h2>
         <div class="sub-title">بطاقة تعريف موظف - {{ $employee->department->name ?? 'العامة' }}</div>
     </div>
 
@@ -144,7 +144,7 @@
     <div class="card-footer">
         <div class="expiry-info">
             تاريخ الإصدار: {{ date('Y-m-d') }}<br>
-            صلاحية البطاقة: سنتين
+            صلاحية البطاقة:5شهور من تاريخ الإصدار
         </div>
         <div class="qr-img">
             {!! QrCode::size(65)->generate($employee->employee_code) !!}
