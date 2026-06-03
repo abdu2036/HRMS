@@ -143,6 +143,7 @@ Route::middleware(['auth', 'role:super-admin|Accountant'])->prefix('admin')->nam
     // سطر الـ resource يغطي (index, create, store, show, edit, update, destroy)
     Route::resource('salaries', SalaryController::class);
     
+    
     // مسار اعتماد وصرف الراتب (تم حذف /admin/ المكررة لتناسق الرابط)
     Route::post('salaries/approve/{id}', [SalaryController::class, 'approvePayment'])->name('salaries.approve');
     

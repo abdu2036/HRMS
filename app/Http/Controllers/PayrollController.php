@@ -15,72 +15,73 @@ use App\Notifications\HRSystemNotification;
 
 class PayrollController extends Controller
 {
-    public function index(Request $request)
-    {
-        // 1. استلام قيم الفلتر
-        $month = $request->month ?? Carbon::now()->month;
-        $year = $request->year ?? Carbon::now()->year;
-        $search = $request->search;
+   public function index(Request $request)
+{
+    // 1. استلام قيم الفلتر
+    $month = $request->month ?? Carbon::now()->month;
+    $year = $request->year ?? Carbon::now()->year;
+    $search = $request->search;
 
-        // 2. بناء الاستعلام الأساسي
-        $query = Employee::query();
+    // 2. بناء الاستعلام الأساسي
+    $query = Employee::query();
 
-        if ($request->filled('search')) {
-            $query->where('full_name', 'LIKE', "%{$search}%");
-        }
-
-        // 3. جلب الموظفين مع فحص جدول التقارير الجديد لظهور "تم الاعتماد"
-        $employees = $query->with(['payrollReports' => function ($q) use ($month, $year) {
-            $q->where('month', $month)->where('year', $year);
-        }])->get();
-
-        foreach ($employees as $emp) {
-            // نتحقق من وجود سجل في جدول التقارير الجديد (PayrollReport)
-            $emp->payroll_record = $emp->payrollReports->first();
-
-            if ($emp->payroll_record) {
-                // إذا وجد سجل، نستخدم القيم المخزنة فيه مباشرة
-                $emp->total_bonuses = $emp->payroll_record->total_bonuses;
-                $emp->total_deductions = $emp->payroll_record->total_deductions;
-                $emp->loan_installment = $emp->payroll_record->loan_installment;
-                $emp->held_amount = $emp->payroll_record->held_assets;
-                $emp->deferred_from_previous = 0;
-                $emp->payroll_status = true; // 🟢 هذا ما سيجعل الزر يتغير لـ "تم الاعتماد"
-            } else {
-                // حسابات الحركات المعلقة (كودك الأصلي)
-                $emp->total_bonuses = FinancialTransaction::where('employee_id', $emp->id)
-                    ->where('type', 'bonus')->where('status', 'pending')
-                    ->whereMonth('transaction_date', $month)->whereYear('transaction_date', $year)->sum('amount');
-
-                $emp->total_deductions = FinancialTransaction::where('employee_id', $emp->id)
-                    ->whereIn('type', ['penalty', 'absent'])->where('status', 'pending')
-                    ->whereMonth('transaction_date', $month)->whereYear('transaction_date', $year)->sum('amount');
-
-                $loan = Loan::where('employee_id', $emp->id)->where('status', 'active')
-                    ->where('remaining_amount', '>', 0)->first();
-                $emp->loan_installment = $loan ? $loan->installment : 0;
-
-                $emp->held_amount = Custody::where('employee_id', $emp->id)
-                    ->whereMonth('created_at', $month)->whereYear('created_at', $year)
-                    ->whereIn('status', ['received', 'shortage'])->sum('amount');
-
-                $emp->deferred_from_previous = Custody::where('employee_id', $emp->id)
-                    ->where('status', 'deferred')
-                    ->where(function ($q) use ($month, $year) {
-                        $q->whereYear('created_at', '<', $year)
-                            ->orWhere(function ($sq) use ($month, $year) {
-                                $sq->whereYear('created_at', $year)->whereMonth('created_at', '<', $month);
-                            });
-                    })->sum('amount');
-
-                $emp->payroll_status = false;
-            }
-            $emp->total_custody_to_deduct = $emp->held_amount + $emp->deferred_from_previous;
-        }
-
-        return view('admin.payroll.index', compact('employees', 'month', 'year'));
+    if ($request->filled('search')) {
+        $query->where('full_name', 'LIKE', "%{$search}%");
     }
 
+    // 3. جلب الموظفين مع فحص جدول التقارير الجديد لظهور "تم الاعتماد"
+    $employees = $query->with(['payrollReports' => function ($q) use ($month, $year) {
+        $q->where('month', $month)->where('year', $year);
+    }])->get();
+
+    foreach ($employees as $emp) {
+        // نتحقق من وجود سجل في جدول التقارير الجديد (PayrollReport)
+        $emp->payroll_record = $emp->payrollReports->first();
+
+        if ($emp->payroll_record) {
+            // إذا وجد سجل، نستخدم القيم المخزنة فيه مباشرة
+            $emp->total_bonuses = $emp->payroll_record->total_bonuses;
+            $emp->total_deductions = $emp->payroll_record->total_deductions;
+            $emp->loan_installment = $emp->payroll_record->loan_installment;
+            $emp->held_amount = $emp->payroll_record->held_assets;
+            $emp->deferred_from_previous = 0;
+            $emp->payroll_status = true; // 🟢 هذا ما سيجعل الزر يتغير لـ "تم الاعتماد"
+        } else {
+            // حسابات الحركات المعلقة (كودك الأصلي)
+            $emp->total_bonuses = FinancialTransaction::where('employee_id', $emp->id)
+                ->where('type', 'bonus')->where('status', 'pending')
+                ->whereMonth('transaction_date', $month)->whereYear('transaction_date', $year)->sum('amount');
+
+            $emp->total_deductions = FinancialTransaction::where('employee_id', $emp->id)
+                ->whereIn('type', ['penalty', 'absent'])->where('status', 'pending')
+                ->whereMonth('transaction_date', $month)->whereYear('transaction_date', $year)->sum('amount');
+
+            // ✅ التعديل المقترح: حساب مجموع أقساط كافة السلف النشطة بدلاً من سلفة واحدة فقط
+            $emp->loan_installment = Loan::where('employee_id', $emp->id)
+                ->where('status', 'active')
+                ->where('remaining_amount', '>', 0)
+                ->sum('installment'); // سيقوم بجمع (10 + 30 + 10) ليظهر المجموع 50 بشكل صحيح
+
+            $emp->held_amount = Custody::where('employee_id', $emp->id)
+                ->whereMonth('created_at', $month)->whereYear('created_at', $year)
+                ->whereIn('status', ['received', 'shortage'])->sum('amount');
+
+            $emp->deferred_from_previous = Custody::where('employee_id', $emp->id)
+                ->where('status', 'deferred')
+                ->where(function ($q) use ($month, $year) {
+                    $q->whereYear('created_at', '<', $year)
+                        ->orWhere(function ($sq) use ($month, $year) {
+                            $sq->whereYear('created_at', $year)->whereMonth('created_at', '<', $month);
+                        });
+                })->sum('amount');
+
+            $emp->payroll_status = false;
+        }
+        $emp->total_custody_to_deduct = $emp->held_amount + $emp->deferred_from_previous;
+    }
+
+    return view('admin.payroll.index', compact('employees', 'month', 'year'));
+}
    public function process(Request $request)
 {
     $request->validate([

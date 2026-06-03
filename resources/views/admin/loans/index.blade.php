@@ -42,6 +42,7 @@
                                 <th>تاريخ البدء</th>
                                 <th>الحالة</th>
                                 <th>العمليات</th>
+                                <th>الإيصال</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -82,13 +83,14 @@
                                         @endif
 
                                         {{-- زر التعديل --}}
+                                        
                                         <button type="button" class="btn btn-info btn-sm" data-toggle="modal"
                                             data-target="#editLoan{{ $loan->id }}" title="تعديل">
                                             <i class="fas fa-edit"></i>
                                         </button>
 
                                         {{-- زر الحذف المتصل بكود SweetAlert في الماستر --}}
-                                        <button type="button" class="btn btn-danger btn-sm"
+                                      <!--  <button type="button" class="btn btn-danger btn-sm"
                                             onclick="confirmDelete({{ $loan->id }})" title="حذف">
                                             <i class="fas fa-trash"></i>
                                         </button>
@@ -99,7 +101,13 @@
                                             style="display:none;">
                                             @csrf
                                             @method('DELETE')
-                                        </form>
+                                        </form> -->
+<td>
+    <button type="button" class="btn btn-sm btn-default border shadow-sm" 
+            onclick="printLoanReceipt('{{ $loan->employee?->full_name ?? '---' }}', '{{ number_format($loan->amount, 2) }}', '{{ number_format($loan->installment, 2) }}', '{{ $loan->start_date }}')">
+        <i class="fas fa-print text-primary"></i> إيصال
+    </button>
+</td>
                                     </td>
                                 </tr>
 
@@ -227,3 +235,68 @@
         </div>
     </div>
 @endsection
+<script>
+function printLoanReceipt(employeeName, totalAmount, monthlyInstallment, startDate) {
+    var printWindow = window.open('', '', 'height=700,width=850');
+    
+    printWindow.document.write('<html><head><title>إيصال صرف سلفة مالية</title>');
+    // استدعاء تصميم جاهز ونظيف للطباعة
+    printWindow.document.write('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">');
+    printWindow.document.write('<style>');
+    printWindow.document.write('body { font-family: "Cairo", sans-serif; padding: 40px; direction: rtl; text-align: right; background-color: #fff !important; color: #000 !important; }');
+    printWindow.document.write('.receipt-box { border: 3px double #000; padding: 25px; margin: 10px auto; max-width: 750px; }');
+    printWindow.document.write('.receipt-header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 15px; margin-bottom: 20px; }');
+    printWindow.document.write('.receipt-title { font-size: 24px; font-weight: bold; margin-top: 10px; background: #f2f2f2; display: inline-block; padding: 5px 25px; border: 1px solid #000; }');
+    printWindow.document.write('.receipt-row { font-size: 16px; line-height: 2.2; margin-bottom: 10px; }');
+    printWindow.document.write('.underline-space { border-bottom: 1px dotted #000; display: inline-block; font-weight: bold; padding: 0 10px; text-align: center; }');
+    printWindow.document.write('.footer-signatures { margin-top: 50px; border-top: 1px dashed #000; padding-top: 20px; }');
+    printWindow.document.write('</style></head><body>');
+    
+    // محتوى الإيصال المالي الرسمي
+    printWindow.document.write('<div class="receipt-box">');
+    
+    // الترويسة
+    printWindow.document.write('<div class="receipt-header">');
+    printWindow.document.write('<h3 style="font-weight: bold; margin: 0;">نظام إدارة الموظفين والموارد البشرية</h3>');
+    printWindow.document.write('<p style="font-size: 14px; color: #444; margin: 5px 0 0 0;">إدارة الشؤون المالية والرواتب</p>');
+    printWindow.document.write('<div class="receipt-title">إيصال صرف سلفة مالي</div>');
+    printWindow.document.write('</div>');
+    
+    // تفاصيل الصرف وصيغة الإقرار القانونية
+    printWindow.document.write('<div class="receipt-row">');
+    printWindow.document.write('تاريخ الصرف: <span class="underline-space" style="width: 150px;">' + startDate + '</span> &nbsp;&nbsp;&nbsp;&nbsp; ');
+    printWindow.document.write('المبلغ المالي الصافي: <span class="underline-space" style="width: 180px; font-size: 18px;">' + totalAmount + ' د.ل</span>');
+    printWindow.document.write('</div>');
+    
+    printWindow.document.write('<div class="receipt-row" style="margin-top: 15px;">');
+    printWindow.document.write('يصرف للموظف السيد/ة: <span class="underline-space" style="width: 450px; font-size: 17px;">' + employeeName + '</span>');
+    printWindow.document.write('</div>');
+    
+    printWindow.document.write('<div class="receipt-row">');
+    printWindow.document.write('وذلك عبارة عن سلفة مالية مستحقة، على أن يتم خصمها من المرتب الشهري على أقساط ثابتة وقيمة القسط: ');
+    printWindow.document.write('<span class="underline-space" style="width: 150px;">' + monthlyInstallment + ' د.ل</span> شهرياً ابتكاراً من تاريخ التفعيل المعتمد.');
+    printWindow.document.write('</div>');
+    
+    printWindow.document.write('<div class="receipt-row" style="margin-top: 20px; font-style: italic; font-size: 14px; color: #333;">');
+    printWindow.document.write('إقرار واستلام: "أقر أنا الموقع أدناه بأنني استلمت المبلغ المذكور أعلاه نقداً/مصرفياً وأوافق على شروط الخصم الموضحة بالمنظومة."');
+    printWindow.document.write('</div>');
+    
+    // التواقيع الرسمية للتوثيق والأرشفة الورقية
+    printWindow.document.write('<div class="row footer-signatures text-center">');
+    printWindow.document.write('<div class="col-4"><h5>توقيع المستلم (الموظف)</h5><br><p>...........................</p></div>');
+    printWindow.document.write('<div class="col-4"><h5>المحاسب المالي</h5><br><p>...........................</p></div>');
+    printWindow.document.write('<div class="col-4"><h5>اعتماد الإدارة</h5><br><p>...........................</p></div>');
+    printWindow.document.write('</div>');
+    
+    printWindow.document.write('</div>'); // نهاية الصندوق
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    
+    // تشغيل أمر الطباعة المباشر بعد التحميل
+    setTimeout(function() {
+        printWindow.focus();
+        printWindow.print();
+        printWindow.close();
+    }, 350);
+}
+</script>

@@ -15,46 +15,32 @@ class SalaryController extends Controller
      */
 public function index()
 {
-    // جلب جميع الموظفين المسجلين في جدول الموظفين وليس جدول المستخدمين
-    $allEmployees = Employee::all();
-    // 1. جلب الرواتب التي تملك موظفاً فقط لتجنب خطأ Attempt to read property on null
-    // مع جلب العمليات المالية المعلقة (pending) فقط في استعلام واحد (Eager Loading)
-    $salaries = Salary::with('employee')
-        ->with(['employee.financialTransactions' => function($query) {
-            $query->where('status', 'pending');
-        }])
-        ->get();
+    // جلب الرواتب مع الموظفين المرتبطين بها فقط لإعداد التقرير الإجمالي
+    $salaries = Salary::with('employee')->get();
+
+    // متغيرات التقارير والإحصائيات الكلية في المنشأة
+    $totalEmployeesCount = $salaries->count(); 
+    $totalBasicSalaries = 0;
+    $totalAllowances = 0;
+    $totalNetSalaries = 0;
 
     foreach ($salaries as $salary) {
-        $employee = $salary->employee;
+        // حساب الصافي الثابت (الأساسي + البدلات) للموظف الحالي
+        $salary->net_salary = $salary->basic_salary + ($salary->allowances ?? 0);
 
-        // التحقق الإضافي لزيادة الأمان (رغم وجود has('employee'))
-        if ($employee) {
-            // 2. حساب المكافآت المعلقة (+) باستخدام العلاقة المحملة مسبقاً
-            $totalBonuses = $employee->financialTransactions
-                ->where('type', 'bonus')
-                ->sum('amount');
-
-            // 3. حساب الخصومات المعلقة (-) (سلف، عجز عهدة، جزاءات)
-            $totalDeductions = $employee->financialTransactions
-                ->whereIn('type', ['penalty', 'custody_deficit', 'advance'])
-                ->sum('amount');
-
-            // 4. تخزين القيم داخل كائن الراتب لاستخدامها في الـ Blade
-            $salary->total_bonuses = $totalBonuses;
-            $salary->total_deductions = $totalDeductions;
-
-            // 5. حساب الصافي النهائي (الراتب الأساسي + البدلات + المكافآت - الخصومات)
-            $salary->net_salary = ($salary->basic_salary + ($salary->allowances ?? 0) + $totalBonuses) - $totalDeductions;
-        } else {
-            // في حالة نادرة (إذا لم يوجد موظف) نضع قيماً افتراضية
-            $salary->total_bonuses = 0;
-            $salary->total_deductions = 0;
-            $salary->net_salary = $salary->basic_salary + ($salary->allowances ?? 0);
-        }
+        // تجميع التقارير الكلية للمنشأة
+        $totalBasicSalaries += $salary->basic_salary;
+        $totalAllowances += ($salary->allowances ?? 0);
+        $totalNetSalaries += $salary->net_salary;
     }
 
-    return view('admin.salaries.index', compact('salaries'));
+    return view('admin.salaries.index', compact(
+        'salaries', 
+        'totalEmployeesCount', 
+        'totalBasicSalaries', 
+        'totalAllowances', 
+        'totalNetSalaries'
+    ));
 }
     /**
      * Show the form for creating a new resource.
@@ -116,7 +102,7 @@ public function index()
         $salary->update($request->all());
 
         // 4. الرد وإعادة التوجيه
-        return redirect()->route('salaries.index')->with('success', 'تم تحديث بيانات الراتب بنجاح');
+        return redirect()->route('admin.salaries.index')->with('success', 'تم تحديث بيانات الراتب بنجاح');
     }
 
     /**

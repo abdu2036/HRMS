@@ -129,7 +129,10 @@
                         </tr>
                     @endforeach
                 </tbody>
-            </table>
+         </table>
+        </div>
+        <div class="card-footer bg-white d-flex justify-content-center">
+            {{ $employees->appends(request()->query())->links('pagination::bootstrap-4') }}
         </div>
     </div>
 
