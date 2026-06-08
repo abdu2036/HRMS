@@ -133,13 +133,13 @@
 
             <div class="row mt-2">
                 <div class="col-md-4 form-group">
-                    <label class="font-weight-bold">المؤهل العلمي <span class="text-danger">*</span></label>
+                    <label class="font-weight-bold"> الجنسية <span class="text-danger">*</span></label>
                     <div class="input-group">
                         <div class="input-group-prepend">
                             <span class="input-group-text"><i class="fas fa-graduation-cap"></i></span>
                         </div>
                         <input type="text" name="qualification" class="form-control" 
-                               value="{{ old('qualification') }}" placeholder="مثلاً: بكالوريوس هندسة" required>
+                               value="{{ old('qualification') }}" placeholder=" جنسية الموظف " required>
                     </div>
                 </div>
                 <div class="col-md-4 form-group">
@@ -219,8 +219,8 @@
                             <span class="input-group-text"><i class="fas fa-toggle-on"></i></span>
                         </div>
                         <select name="status" class="form-control select2bs4">
-                            <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>نشط</option>
-                            <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>غير نشط</option>
+                            <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>يعمل</option>
+                            <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>لايعمل </option>
                         </select>
                     </div>
                 </div>

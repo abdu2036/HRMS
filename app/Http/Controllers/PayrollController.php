@@ -15,7 +15,7 @@ use App\Notifications\HRSystemNotification;
 
 class PayrollController extends Controller
 {
-   public function index(Request $request)
+public function index(Request $request)
 {
     // 1. استلام قيم الفلتر
     $month = $request->month ?? Carbon::now()->month;
@@ -25,9 +25,16 @@ class PayrollController extends Controller
     // 2. بناء الاستعلام الأساسي
     $query = Employee::query();
 
+    // 🟢 التعديل الأول: استبعاد الموظفين غير النشطين لضمان عدم ظهورهم نهائياً في الصرف
+    $query->where('status', '!=', 'غير نشط')
+          ->where('status', '!=', 'inactive');
+
     if ($request->filled('search')) {
         $query->where('full_name', 'LIKE', "%{$search}%");
     }
+
+    // 🟢 التعديل الثاني: الترتيب من أول موظف تم إدراجه (الأقدم) إلى آخر موظف (الأحدث)
+    $query->orderBy('id', 'asc');
 
     // 3. جلب الموظفين مع فحص جدول التقارير الجديد لظهور "تم الاعتماد"
     $employees = $query->with(['payrollReports' => function ($q) use ($month, $year) {
@@ -56,11 +63,11 @@ class PayrollController extends Controller
                 ->whereIn('type', ['penalty', 'absent'])->where('status', 'pending')
                 ->whereMonth('transaction_date', $month)->whereYear('transaction_date', $year)->sum('amount');
 
-            // ✅ التعديل المقترح: حساب مجموع أقساط كافة السلف النشطة بدلاً من سلفة واحدة فقط
+            // حساب مجموع أقساط كافة السلف النشطة (تجميع 10 + 30 + 10 ليظهر 50)
             $emp->loan_installment = Loan::where('employee_id', $emp->id)
                 ->where('status', 'active')
                 ->where('remaining_amount', '>', 0)
-                ->sum('installment'); // سيقوم بجمع (10 + 30 + 10) ليظهر المجموع 50 بشكل صحيح
+                ->sum('installment'); 
 
             $emp->held_amount = Custody::where('employee_id', $emp->id)
                 ->whereMonth('created_at', $month)->whereYear('created_at', $year)

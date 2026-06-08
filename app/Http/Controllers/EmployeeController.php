@@ -35,6 +35,7 @@ class EmployeeController extends Controller
               ->orWhere('national_id', 'like', '%' . $search . '%');    // البحث بالرقم الوطني
         });
     }
+    $query->orderBy('id', 'asc');
 
     // ترتيب الموظفين الأحدث أولاً مع استخدام الترقيم (Pagination) لضمان أداء سريع للجدول
     $employees = $query->latest()->paginate(10);

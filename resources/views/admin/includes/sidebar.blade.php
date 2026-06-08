@@ -282,13 +282,26 @@
                           ->orWhere('receiver_department_id', auth()->user()->department_id);
                     })->count();
 @endphp
-@if(auth()->user()->hasAnyRole(['super-admin', 'admin', 'hr-manager']))
+@if(auth()->user()->hasAnyRole(['super-admin', 'admin', 'hr-manager', 'Accountant' ]))
       <li class="nav-item">
     <a href="{{ route('correspondence.index') }}" class="nav-link {{ request()->is('admin/correspondence*') ? 'active' : '' }}">
         <i class="nav-icon fas fa-envelope-open-text"></i>
         <p>
             المراسلات الإدارية
             <span class="badge badge-info right">جديد</span>
+        </p>
+    </a>
+</li>
+@endif
+
+{{-- زر التوجيه إلى منظومة الشركات الخارجي --}}
+@if(auth()->user()->hasAnyRole(['super-admin', 'Accountant']))
+<li class="nav-item">
+    <a href="https://alhadayiqcs.ly/" target="_blank" class="nav-link">
+        <i class="nav-icon fas fa-building text-info"></i>
+        <p>
+            منظومة الشركات
+            <span class="right badge badge-danger">خارجي</span>
         </p>
     </a>
 </li>

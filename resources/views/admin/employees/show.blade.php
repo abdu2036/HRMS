@@ -70,7 +70,7 @@
                                     </span>
                                 </li>
                                 {{-- رصيد التذاكر في العمود الجانبي --}}
-<li class="list-group-item bg-light mt-2 border rounded shadow-sm">
+<!-- <li class="list-group-item bg-light mt-2 border rounded shadow-sm">
     <b><i class="fas fa-ticket-alt text-warning mr-1"></i> رصيد التذاكر (الشهر الحالي)</b>
     <div class="text-center mt-2">
         <h4 class="font-weight-bold text-success mb-0">
@@ -81,7 +81,7 @@
             <i class="fas fa-minus-circle"></i> صرف تذاكر
         </button>
     </div>
-</li>
+</li> -->
                             </ul>
                         </div>
                     </div>
@@ -140,6 +140,11 @@
                                                 <tr>
                                                     <th>الحالة الاجتماعية</th>
                                                     <td>{{ $employee->marital_status }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>الجنسية</th>
+                                                    <td class="text-success font-weight-bold">
+                                                        {{ $employee->qualification ?? '---' }}</td>
                                                 </tr>
                                                 <tr>
                                                     <th>تاريخ انتهاء الشهادة الصحية</th>

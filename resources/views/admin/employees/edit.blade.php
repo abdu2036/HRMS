@@ -210,8 +210,8 @@
                 <div class="col-md-4 form-group">
                     <label>حالة الموظف <span class="text-danger">*</span></label>
                     <select name="status" class="form-control">
-                        <option value="active" {{ $employee->status == 'active' ? 'selected' : '' }}>نشط</option>
-                        <option value="inactive" {{ $employee->status == 'inactive' ? 'selected' : '' }}>غير نشط</option>
+                        <option value="active" {{ $employee->status == 'active' ? 'selected' : '' }}>يعمل</option>
+                        <option value="inactive" {{ $employee->status == 'inactive' ? 'selected' : '' }}>لايعمل </option>
                     </select>
                 </div>
             </div>

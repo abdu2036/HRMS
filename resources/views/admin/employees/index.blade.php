@@ -85,9 +85,9 @@
                             </td>
                             <td>
                                 @if($emp->status == 'active' || $emp->status == 1)
-                                    <span class="badge badge-success shadow-sm">نشط</span>
+                                    <span class="badge badge-success shadow-sm">يعمل</span>
                                 @else
-                                    <span class="badge badge-danger shadow-sm">غير نشط</span>
+                                    <span class="badge badge-danger shadow-sm">لايعمل </span>
                                 @endif
                             </td>
                             <td>

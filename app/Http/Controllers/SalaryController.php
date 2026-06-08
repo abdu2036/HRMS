@@ -15,23 +15,37 @@ class SalaryController extends Controller
      */
 public function index()
 {
-    // جلب الرواتب مع الموظفين المرتبطين بها فقط لإعداد التقرير الإجمالي
-    $salaries = Salary::with('employee')->get();
+    // 🟢 جلب كل الموظفين الذين حالتهم لا تساوي "غير نشط"
+    $employees = Employee::where('status', '!=', 'غير نشط')
+        ->where('status', '!=', 'inactive') 
+        ->with('salary')
+        // ✅ التعديل هنا: الترتيب من أول موظف تم إدراجه (الأقدم) إلى آخر موظف (الأحدث)
+        ->orderBy('id', 'asc') 
+        ->get();
 
-    // متغيرات التقارير والإحصائيات الكلية في المنشأة
-    $totalEmployeesCount = $salaries->count(); 
+    // متغيرات التقارير والإحصائيات الكلية للمنشأة
+    $totalEmployeesCount = $employees->count(); 
     $totalBasicSalaries = 0;
     $totalAllowances = 0;
     $totalNetSalaries = 0;
 
-    foreach ($salaries as $salary) {
-        // حساب الصافي الثابت (الأساسي + البدلات) للموظف الحالي
-        $salary->net_salary = $salary->basic_salary + ($salary->allowances ?? 0);
+    // مصفوفة لتمريرها للـ View
+    $salaries = collect();
 
-        // تجميع التقارير الكلية للمنشأة
-        $totalBasicSalaries += $salary->basic_salary;
-        $totalAllowances += ($salary->allowances ?? 0);
-        $totalNetSalaries += $salary->net_salary;
+    foreach ($employees as $employee) {
+        if ($employee->salary) {
+            $salary = $employee->salary;
+            
+            // حساب الصافي الثابت
+            $salary->net_salary = $salary->basic_salary + ($salary->allowances ?? 0);
+
+            // تجميع التقارير الكلية للمنشأة
+            $totalBasicSalaries += $salary->basic_salary;
+            $totalAllowances += ($salary->allowances ?? 0);
+            $totalNetSalaries += $salary->net_salary;
+
+            $salaries->push($salary);
+        }
     }
 
     return view('admin.salaries.index', compact(
