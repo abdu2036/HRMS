@@ -42,7 +42,7 @@
                                 <th>تاريخ البدء</th>
                                 <th>الحالة</th>
                                 <th>العمليات</th>
-                                <th>الإيصال</th>
+                                <th>إيصال</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -102,12 +102,12 @@
                                             @csrf
                                             @method('DELETE')
                                         </form> -->
-<td>
-    <button type="button" class="btn btn-sm btn-default border shadow-sm" 
-            onclick="printLoanReceipt('{{ $loan->employee?->full_name ?? '---' }}', '{{ number_format($loan->amount, 2) }}', '{{ number_format($loan->installment, 2) }}', '{{ $loan->start_date }}')">
-        <i class="fas fa-print text-primary"></i> إيصال
-    </button>
-</td>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-default border shadow-sm" 
+                                                onclick="printLoanReceipt('{{ $loan->employee?->full_name ?? '---' }}', '{{ number_format($loan->amount, 2) }}', '{{ number_format($loan->installment, 2) }}', '{{ $loan->start_date }}')">
+                                            <i class="fas fa-print text-primary"></i> إيصال
+                                        </button>
                                     </td>
                                 </tr>
 
@@ -196,10 +196,9 @@
                 <form action="{{ route('admin.loans.store') }}" method="POST">
                     @csrf
                     <div class="modal-body text-right">
-                        {{-- تأكد أن هذا الكود داخل المودال الخاص بإضافة سلفة جديدة --}}
                         <div class="form-group">
                             <label>اختر الموظف</label>
-                            <select name="employee_id" class="form-control select2" required style="width: 100%;">
+                            <select name="employee_id" id="employeeSelect" class="form-control select2" required style="width: 100%;">
                                 <option value="">-- اختر الموظف --</option>
                                 @foreach($employees as $employee)
                                     <option value="{{ $employee->id }}">
@@ -235,68 +234,110 @@
         </div>
     </div>
 @endsection
-<script>
-function printLoanReceipt(employeeName, totalAmount, monthlyInstallment, startDate) {
-    var printWindow = window.open('', '', 'height=700,width=850');
-    
-    printWindow.document.write('<html><head><title>إيصال صرف سلفة مالية</title>');
-    // استدعاء تصميم جاهز ونظيف للطباعة
-    printWindow.document.write('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">');
-    printWindow.document.write('<style>');
-    printWindow.document.write('body { font-family: "Cairo", sans-serif; padding: 40px; direction: rtl; text-align: right; background-color: #fff !important; color: #000 !important; }');
-    printWindow.document.write('.receipt-box { border: 3px double #000; padding: 25px; margin: 10px auto; max-width: 750px; }');
-    printWindow.document.write('.receipt-header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 15px; margin-bottom: 20px; }');
-    printWindow.document.write('.receipt-title { font-size: 24px; font-weight: bold; margin-top: 10px; background: #f2f2f2; display: inline-block; padding: 5px 25px; border: 1px solid #000; }');
-    printWindow.document.write('.receipt-row { font-size: 16px; line-height: 2.2; margin-bottom: 10px; }');
-    printWindow.document.write('.underline-space { border-bottom: 1px dotted #000; display: inline-block; font-weight: bold; padding: 0 10px; text-align: center; }');
-    printWindow.document.write('.footer-signatures { margin-top: 50px; border-top: 1px dashed #000; padding-top: 20px; }');
-    printWindow.document.write('</style></head><body>');
-    
-    // محتوى الإيصال المالي الرسمي
-    printWindow.document.write('<div class="receipt-box">');
-    
-    // الترويسة
-    printWindow.document.write('<div class="receipt-header">');
-    printWindow.document.write('<h3 style="font-weight: bold; margin: 0;">نظام إدارة الموظفين والموارد البشرية</h3>');
-    printWindow.document.write('<p style="font-size: 14px; color: #444; margin: 5px 0 0 0;">إدارة الشؤون المالية والرواتب</p>');
-    printWindow.document.write('<div class="receipt-title">إيصال صرف سلفة مالي</div>');
-    printWindow.document.write('</div>');
-    
-    // تفاصيل الصرف وصيغة الإقرار القانونية
-    printWindow.document.write('<div class="receipt-row">');
-    printWindow.document.write('تاريخ الصرف: <span class="underline-space" style="width: 150px;">' + startDate + '</span> &nbsp;&nbsp;&nbsp;&nbsp; ');
-    printWindow.document.write('المبلغ المالي الصافي: <span class="underline-space" style="width: 180px; font-size: 18px;">' + totalAmount + ' د.ل</span>');
-    printWindow.document.write('</div>');
-    
-    printWindow.document.write('<div class="receipt-row" style="margin-top: 15px;">');
-    printWindow.document.write('يصرف للموظف السيد/ة: <span class="underline-space" style="width: 450px; font-size: 17px;">' + employeeName + '</span>');
-    printWindow.document.write('</div>');
-    
-    printWindow.document.write('<div class="receipt-row">');
-    printWindow.document.write('وذلك عبارة عن سلفة مالية مستحقة، على أن يتم خصمها من المرتب الشهري على أقساط ثابتة وقيمة القسط: ');
-    printWindow.document.write('<span class="underline-space" style="width: 150px;">' + monthlyInstallment + ' د.ل</span> شهرياً ابتكاراً من تاريخ التفعيل المعتمد.');
-    printWindow.document.write('</div>');
-    
-    printWindow.document.write('<div class="receipt-row" style="margin-top: 20px; font-style: italic; font-size: 14px; color: #333;">');
-    printWindow.document.write('إقرار واستلام: "أقر أنا الموقع أدناه بأنني استلمت المبلغ المذكور أعلاه نقداً/مصرفياً وأوافق على شروط الخصم الموضحة بالمنظومة."');
-    printWindow.document.write('</div>');
-    
-    // التواقيع الرسمية للتوثيق والأرشفة الورقية
-    printWindow.document.write('<div class="row footer-signatures text-center">');
-    printWindow.document.write('<div class="col-4"><h5>توقيع المستلم (الموظف)</h5><br><p>...........................</p></div>');
-    printWindow.document.write('<div class="col-4"><h5>المحاسب المالي</h5><br><p>...........................</p></div>');
-    printWindow.document.write('<div class="col-4"><h5>اعتماد الإدارة</h5><br><p>...........................</p></div>');
-    printWindow.document.write('</div>');
-    
-    printWindow.document.write('</div>'); // نهاية الصندوق
-    printWindow.document.write('</body></html>');
-    printWindow.document.close();
-    
-    // تشغيل أمر الطباعة المباشر بعد التحميل
-    setTimeout(function() {
-        printWindow.focus();
-        printWindow.print();
-        printWindow.close();
-    }, 350);
-}
-</script>
+
+@push('css')
+    {{-- استدعاء المكاتب بصيغة CDN لضمان تحميلها بشكل سليم إن لم تكن مدمجة بالماستر --}}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@1.5.2/dist/select2-bootstrap4.min.css">
+    <style>
+        /* تنسيقات مخصصة لتثبيت اتجاه البحث باللغة العربية والتوافق مع المودال */
+        .select2-container {
+            z-index: 99999 !important; /* لضمان ظهور القائمة فوق المودال دائماً */
+        }
+        .select2-container--bootstrap4 .select2-selection--single {
+            height: calc(2.25rem + 2px) !important;
+        }
+        .select2-search__field {
+            direction: rtl !important;
+            text-align: right !important;
+        }
+        .select2-results__option {
+            text-align: right !important;
+            direction: rtl !important;
+        }
+    </style>
+@endpush
+
+@push('js')
+    {{-- تضمين مكتبة Select2 بشكل صريح هنا --}}
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        // استخدام window.addEventListener لضمان تنفيذ الكود حتى لو تم تحميل jQuery متأخراً في ملف الماستر
+        window.addEventListener('load', function() {
+            if (window.jQuery) {
+                $(document).ready(function() {
+                    // تشغيل السكربت وربطه عند فتح المودال مباشرة لتجنب تجميد أبعاد صندوق الخيارات
+                    $('#addLoanModal').on('shown.bs.modal', function () {
+                        $('#employeeSelect').select2({
+                            theme: 'bootstrap4',
+                            placeholder: "-- اختر الموظف --",
+                            allowClear: true,
+                            dir: "rtl",
+                            dropdownParent: $('#addLoanModal') /* لمنع اختفاء صندوق البحث خلف المودال */
+                        });
+                    });
+                });
+            } else {
+                console.error("jQuery is not loaded yet.");
+            }
+        });
+
+        function printLoanReceipt(employeeName, totalAmount, monthlyInstallment, startDate) {
+            var printWindow = window.open('', '', 'height=700,width=850');
+            
+            printWindow.document.write('<html><head><title>إيصال صرف سلفة مالية</title>');
+            printWindow.document.write('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">');
+            printWindow.document.write('<style>');
+            printWindow.document.write('body { font-family: "Cairo", sans-serif; padding: 40px; direction: rtl; text-align: right; background-color: #fff !important; color: #000 !important; }');
+            printWindow.document.write('.receipt-box { border: 3px double #000; padding: 25px; margin: 10px auto; max-width: 750px; }');
+            printWindow.document.write('.receipt-header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 15px; margin-bottom: 20px; }');
+            printWindow.document.write('.receipt-title { font-size: 24px; font-weight: bold; margin-top: 10px; background: #f2f2f2; display: inline-block; padding: 5px 25px; border: 1px solid #000; }');
+            printWindow.document.write('.receipt-row { font-size: 16px; line-height: 2.2; margin-bottom: 10px; }');
+            printWindow.document.write('.underline-space { border-bottom: 1px dotted #000; display: inline-block; font-weight: bold; padding: 0 10px; text-align: center; }');
+            printWindow.document.write('.footer-signatures { margin-top: 50px; border-top: 1px dashed #000; padding-top: 20px; }');
+            printWindow.document.write('</style></head><body>');
+            
+            printWindow.document.write('<div class="receipt-box">');
+            
+            printWindow.document.write('<div class="receipt-header">');
+            printWindow.document.write('<h3 style="font-weight: bold; margin: 0;">نظام إدارة الموظفين والموارد البشرية</h3>');
+            printWindow.document.write('<p style="font-size: 14px; color: #444; margin: 5px 0 0 0;">إدارة الشؤون المالية والرواتب</p>');
+            printWindow.document.write('<div class="receipt-title">إيصال صرف سلفة مالي</div>');
+            printWindow.document.write('</div>');
+            
+            printWindow.document.write('<div class="receipt-row">');
+            printWindow.document.write('تاريخ الصرف: <span class="underline-space" style="width: 150px;">' + startDate + '</span> &nbsp;&nbsp;&nbsp;&nbsp; ');
+            printWindow.document.write('المبلغ المالي الصافي: <span class="underline-space" style="width: 180px; font-size: 18px;">' + totalAmount + ' د.ل</span>');
+            printWindow.document.write('</div>');
+            
+            printWindow.document.write('<div class="receipt-row" style="margin-top: 15px;">');
+            printWindow.document.write('يصرف للموظف السيد/ة: <span class="underline-space" style="width: 450px; font-size: 17px;">' + employeeName + '</span>');
+            printWindow.document.write('</div>');
+            
+            printWindow.document.write('<div class="receipt-row">');
+            printWindow.document.write('وذلك عبارة عن سلفة مالية مستحقة، على أن يتم خصمها من المرتب الشهري على أقساط ثابتة وقيمة القسط: ');
+            printWindow.document.write('<span class="underline-space" style="width: 150px;">' + monthlyInstallment + ' د.ل</span> شهرياً ابتكاراً من تاريخ التفعيل المعتمد.');
+            printWindow.document.write('</div>');
+            
+            printWindow.document.write('<div class="receipt-row" style="margin-top: 20px; font-style: italic; font-size: 14px; color: #333;">');
+            printWindow.document.write('إقرار واستلام: "أقر أنا الموقع أدناه بأنني استلمت المبلغ المذكور أعلاه نقداً/مصرفياً وأوافق على شروط الخصم الموضحة بالمنظومة."');
+            printWindow.document.write('</div>');
+            
+            printWindow.document.write('<div class="row footer-signatures text-center">');
+            printWindow.document.write('<div class="col-4"><h5>توقيع المستلم (الموظف)</h5><br><p>...........................</p></div>');
+            printWindow.document.write('<div class="col-4"><h5>المحاسب المالي</h5><br><p>...........................</p></div>');
+            printWindow.document.write('<div class="col-4"><h5>اعتماد الإدارة</h5><br><p>...........................</p></div>');
+            printWindow.document.write('</div>');
+            
+            printWindow.document.write('</div>');
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            
+            setTimeout(function() {
+                printWindow.focus();
+                printWindow.print();
+                printWindow.close();
+            }, 350);
+        }
+    </script>
+@endpush

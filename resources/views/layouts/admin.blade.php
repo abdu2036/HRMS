@@ -1,8 +1,4 @@
 <!DOCTYPE html>
-<!--
-This is a starter template page. Use this page to start your new project from
-scratch. This page gets rid of all links and provides the needed markup only.
--->
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -11,15 +7,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
   <title>@yield('title') </title>
   @include('admin.includes.header')
-  <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="{{ asset('assets/admin/plugins/fontawesome-free/css/all.min.css') }}">
-  <!-- Theme style -->
   <link rel="stylesheet" href="{{ asset('assets/admin/dist/css/adminlte.min.css') }}">
-  <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="{{ asset('assets/admin/fonts/SansPro/SansPro.min.css') }}">
   <link rel="stylesheet" href="{{ asset('assets/admin/css/bootstrap_rtl-v4.2.1/bootstrap.min.css') }}">
   <link rel="stylesheet" href="{{ asset('assets/admin/css/bootstrap_rtl-v4.2.1/custom_rtl.css') }}">
   <link rel="stylesheet" href="{{ asset('assets/admin/css/mycustomstyle.css') }}">
+  
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@1.5.2/dist/select2-bootstrap4.min.css">
   
   <style>
 /* تنسيق شريط الخطوات الموحد للنظام */
@@ -45,43 +41,44 @@ scratch. This page gets rid of all links and provides the needed markup only.
 .is-invalid:focus {
     box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
 }
+
+/* تنسيقات مخصصة لـ Select2 داخل المودال لتبدو متناسقة ودعم اللغة العربية */
+.select2-container {
+    z-index: 99999 !important; /* لضمان ظهور قائمة البحث فوق المودال دائماً */
+}
+.select2-container--bootstrap4 .select2-selection--single {
+    height: calc(2.25rem + 2px) !important;
+}
+.select2-search__field {
+    direction: rtl !important;
+    text-align: right !important;
+}
+.select2-results__option {
+    text-align: right !important;
+    direction: rtl !important;
+}
 </style> 
 
+  @stack('css')
 </head>
 <body class="hold-transition sidebar-mini">
 <div class="wrapper">
 
-  <!-- Navbar -->
-@include('admin.includes.navbar')
-  <!-- /.navbar -->
-
-  <!-- Main Sidebar Container -->
-@include('admin.includes.sidebar')
-  <!-- Content Wrapper. Contains page content -->
- @include('admin.includes.content')
-  <!-- /.content-wrapper -->
-
-  <!-- Control Sidebar -->
-  
-  <!-- /.control-sidebar -->
-
-  <!-- Main Footer -->
-@include('admin.includes.footer')
-<!-- ./wrapper -->
-
+  @include('admin.includes.navbar')
+  @include('admin.includes.sidebar')
+  @include('admin.includes.content')
+  @include('admin.includes.footer')
 </div>
-<!-- REQUIRED SCRIPTS -->
-
-<!-- jQuery -->
 <script src="{{ asset('assets/admin/plugins/jquery/jquery.min.js') }}"></script>
-<!-- Bootstrap 4 -->
 <script src="{{ asset('assets/admin/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-<!-- AdminLTE App -->
 <script src="{{ asset('assets/admin/dist/js/adminlte.min.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 @stack('scripts')
-<!--صرف المرتبات-->
+@stack('js')
+
 <script>
     function confirmPayroll(empId) {
         const methodSelector = document.getElementById('select_method_' + empId);
@@ -131,7 +128,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         <span>${methodText}</span>
                     </div>
                     <hr>
-                    <p style="text-align: center; margin-top: 15px;">هل تريد الاستمرار في عملية الاعتماد؟</p>
+                    <p style="text-align: center; margin-top: 15px;">هل تريد الاستمرار في عملية الاعتماد?</p>
                 </div>
             `,
             icon: 'question',
@@ -149,8 +146,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
             }
         });
     }
-    // 2. دالة طباعة الوصل (تم إصلاح جلب البيانات)
-
 </script>
 
 <script>
@@ -165,7 +160,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
         });
     @endif
 
-    // 2. تنبيه الحذف (سنستخدمه لاحقاً) 🗑️
+    // 2. تنبيه الحذف  🗑️
     function confirmDelete(id) {
         Swal.fire({
             title: 'هل أنت متأكد؟',
@@ -205,7 +200,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     input.classList.add('is-invalid');
                     valid = false;
                 } else {
-                    input.classList.remove('is-invalid');
+                    input.removeClass('is-invalid');
                 }
             });
 
@@ -247,8 +242,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
     }
 
    $(function () {
-    // تفعيل التلميحات (موجود لديك سابقاً)
-    $('[data-toggle="tooltip"]').tooltip();
+    // تفعيل التلميحات
+    if($.fn.tooltip) {
+        $('[data-toggle="tooltip"]').tooltip();
+    }
 
     // الكود الجديد: إزالة الخطأ عند الكتابة أو التغيير
     $(document).on('input change', 'input, select, textarea', function() {
@@ -258,7 +255,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
     });
 });
 </script>
-<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
