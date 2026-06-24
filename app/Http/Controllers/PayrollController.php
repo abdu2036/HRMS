@@ -25,7 +25,7 @@ public function index(Request $request)
     // 2. بناء الاستعلام الأساسي
     $query = Employee::query();
 
-    // 🟢 التعديل الأول: استبعاد الموظفين غير النشطين لضمان عدم ظهورهم نهائياً في الصرف
+    // 🟢 استبعاد الموظفين غير النشطين لضمان عدم ظهورهم نهائياً في الصرف
     $query->where('status', '!=', 'غير نشط')
           ->where('status', '!=', 'inactive');
 
@@ -33,11 +33,11 @@ public function index(Request $request)
         $query->where('full_name', 'LIKE', "%{$search}%");
     }
 
-    // 🟢 التعديل الثاني: الترتيب من أول موظف تم إدراجه (الأقدم) إلى آخر موظف (الأحدث)
+    // 🟢 الترتيب من أول موظف تم إدراجه (الأقدم) إلى آخر موظف (الأحدث)
     $query->orderBy('id', 'asc');
 
-    // 3. جلب الموظفين مع فحص جدول التقارير الجديد لظهور "تم الاعتماد"
-    $employees = $query->with(['payrollReports' => function ($q) use ($month, $year) {
+    // 3. جلب الموظفين مع علاقة المرتب الأساسي (salary) وفحص جدول التقارير لظهور "تم الاعتماد"
+    $employees = $query->with(['salary', 'payrollReports' => function ($q) use ($month, $year) {
         $q->where('month', $month)->where('year', $year);
     }])->get();
 
@@ -47,44 +47,49 @@ public function index(Request $request)
 
         if ($emp->payroll_record) {
             // إذا وجد سجل، نستخدم القيم المخزنة فيه مباشرة
-            $emp->total_bonuses = $emp->payroll_record->total_bonuses;
-            $emp->total_deductions = $emp->payroll_record->total_deductions;
-            $emp->loan_installment = $emp->payroll_record->loan_installment;
-            $emp->held_amount = $emp->payroll_record->held_assets;
+            $emp->basic_salary = round($emp->payroll_record->basic_salary, 2);
+            $emp->total_bonuses = round($emp->payroll_record->total_bonuses, 2);
+            $emp->total_deductions = round($emp->payroll_record->total_deductions, 2);
+            $emp->loan_installment = round($emp->payroll_record->loan_installment, 2);
+            $emp->held_amount = round($emp->payroll_record->held_assets, 2);
             $emp->deferred_from_previous = 0;
-            $emp->payroll_status = true; // 🟢 هذا ما سيجعل الزر يتغير لـ "تم الاعتماد"
+            $emp->payroll_status = true; // 🟢 يجعل الزر يتغير لـ "تم الاعتماد"
         } else {
-            // حسابات الحركات المعلقة (كودك الأصلي)
-            $emp->total_bonuses = FinancialTransaction::where('employee_id', $emp->id)
+            // 🟢 الحل: جلب المرتب الأساسي من جدول العلاقة الحقيقي (salaries)
+            $db_basic_salary = $emp->salary ? $emp->salary->basic_salary : $emp->basic_salary;
+            $emp->basic_salary = round((float) $db_basic_salary, 2);
+
+            // حسابات الحركات المعلقة مع التقريب الثنائي الحاسم لمنع كسور الـ Float
+            $emp->total_bonuses = round(FinancialTransaction::where('employee_id', $emp->id)
                 ->where('type', 'bonus')->where('status', 'pending')
-                ->whereMonth('transaction_date', $month)->whereYear('transaction_date', $year)->sum('amount');
+                ->whereMonth('transaction_date', $month)->whereYear('transaction_date', $year)->sum('amount'), 2);
 
-            $emp->total_deductions = FinancialTransaction::where('employee_id', $emp->id)
+            $emp->total_deductions = round(FinancialTransaction::where('employee_id', $emp->id)
                 ->whereIn('type', ['penalty', 'absent'])->where('status', 'pending')
-                ->whereMonth('transaction_date', $month)->whereYear('transaction_date', $year)->sum('amount');
+                ->whereMonth('transaction_date', $month)->whereYear('transaction_date', $year)->sum('amount'), 2);
 
-            // حساب مجموع أقساط كافة السلف النشطة (تجميع 10 + 30 + 10 ليظهر 50)
-            $emp->loan_installment = Loan::where('employee_id', $emp->id)
+            // حساب مجموع أقساط كافة السلف النشطة
+            $emp->loan_installment = round(Loan::where('employee_id', $emp->id)
                 ->where('status', 'active')
                 ->where('remaining_amount', '>', 0)
-                ->sum('installment'); 
+                ->sum('installment'), 2); 
 
-            $emp->held_amount = Custody::where('employee_id', $emp->id)
+            $emp->held_amount = round(Custody::where('employee_id', $emp->id)
                 ->whereMonth('created_at', $month)->whereYear('created_at', $year)
-                ->whereIn('status', ['received', 'shortage'])->sum('amount');
+                ->whereIn('status', ['received', 'shortage'])->sum('amount'), 2);
 
-            $emp->deferred_from_previous = Custody::where('employee_id', $emp->id)
+            $emp->deferred_from_previous = round(Custody::where('employee_id', $emp->id)
                 ->where('status', 'deferred')
                 ->where(function ($q) use ($month, $year) {
                     $q->whereYear('created_at', '<', $year)
                         ->orWhere(function ($sq) use ($month, $year) {
                             $sq->whereYear('created_at', $year)->whereMonth('created_at', '<', $month);
                         });
-                })->sum('amount');
+                })->sum('amount'), 2);
 
             $emp->payroll_status = false;
         }
-        $emp->total_custody_to_deduct = $emp->held_amount + $emp->deferred_from_previous;
+        $emp->total_custody_to_deduct = round($emp->held_amount + $emp->deferred_from_previous, 2);
     }
 
     return view('admin.payroll.index', compact('employees', 'month', 'year'));
